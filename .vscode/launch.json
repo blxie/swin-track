@@ -1,0 +1,63 @@
+{
+    // Use IntelliSense to learn about possible attributes.
+    // Hover to view descriptions of existing attributes.
+    // For more information, visit: https://go.microsoft.com/fwlink/?linkid=830387
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "name": "MIX-TRAIN",
+            "type": "python",
+            "request": "launch",
+            // "program": "${file}",
+            "program": "main.py",
+            "console": "integratedTerminal",
+            "justMyCode": true,
+            "args": [
+                "SwinTrack",
+                "Tiny",
+                "--output_dir",
+                "./debug_output",
+                "--num_workers",
+                "4",
+            ]
+        },
+        {
+            "name": "GOT-10k-TRAIN",
+            "type": "python",
+            "request": "launch",
+            // "program": "${file}",
+            "program": "main.py",
+            "console": "integratedTerminal",
+            "justMyCode": true,
+            "args": [
+                "SwinTrack",
+                "Tiny",
+                "--mixin_config",
+                "got10k.yaml",
+            ]
+        },
+        {
+            "name": "GOT-10k-TEST",
+            "type": "python",
+            "request": "launch",
+            // "program": "${file}",
+            "program": "main.py",
+            "console": "integratedTerminal",
+            "justMyCode": true,
+            "args": [
+                "SwinTrack",
+                "Tiny",
+                "--weight_path",
+                "checkpoints/SwinTrack-Tiny.pth",
+                "--mixin_config",
+                "evaluation.yaml",
+                "--output_dir",
+                "./debug_output",
+                "--num_workers",
+                "8",
+                "--watch_model_gradients",
+                "--watch_model_parameters",
+            ]
+        },
+    ]
+}
