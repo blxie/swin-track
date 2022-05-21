@@ -283,6 +283,7 @@ def _build_runners(
         if runner_name not in building_context.runner_contexts:
             runner_context = RunnerContext(runner_name)
 
+            # TRACED
             runner = build_runner(
                 model,
                 runner_config[runner_name],
@@ -324,6 +325,7 @@ def _build_runners(
         )
 
         runner.switch_branch(branch_name)
+        # TRACED
         runner.train(branch_context.is_training)
         runner_metric_definitions = runner.get_metric_definitions()
         if runner_metric_definitions is not None and len(
@@ -353,6 +355,7 @@ def build_running_tasks(runtime_vars, config: dict, global_rng, local_rng,
         building_context,
     )
     _build_model(config, runtime_vars, building_context)
+    # TRACED
     _build_runners(
         runtime_vars,
         branch_config,
@@ -381,6 +384,7 @@ def build_running_tasks(runtime_vars, config: dict, global_rng, local_rng,
     global_event_dispatcher = _build_global_event_dispatcher(
         all_event_register)
 
+    # TRACED runner
     running_tasks = {}
     for branch_name, branch_context in building_context.branch_contexts.items(
     ):
@@ -404,6 +408,7 @@ def build_running_tasks(runtime_vars, config: dict, global_rng, local_rng,
         ]
         branch_event_dispatcher = _build_branch_event_dispatcher(
             branch_event_registers)
+        # TRACED runner
         running_tasks[branch_name] = RunningTask(
             data_source_context.data_loader,
             runner_context.runner,
@@ -460,7 +465,7 @@ def build(runtime_vars, config: dict, global_rng, local_rng, wandb_instance):
         print("The anomaly detection for the autograd engine enabled.")
         torch.autograd.set_detect_anomaly(True)
 
-    # TRACED
+    # TRACED runner 定义处
     return RunnerDriver(
         config["name"],
         num_epochs,

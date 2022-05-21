@@ -12,6 +12,7 @@ def _run_fn(fn, args):
 
 
 class DefaultSiamFCEvaluator(BaseRunner):
+
     def __init__(self):
         self.data_pipeline_on_host = None
         self.tracker_evaluator = None
@@ -29,32 +30,34 @@ class DefaultSiamFCEvaluator(BaseRunner):
 
     def get_metric_definitions(self):
         metric_definitions = []
-        data_pipelines = get_branch_specific_objects(
-            self, self.branch_name, "data_pipeline_on_host"
-        )
+        data_pipelines = get_branch_specific_objects(self, self.branch_name,
+                                                     "data_pipeline_on_host")
         for data_pipeline in data_pipelines:
             if hasattr(data_pipeline, "get_metric_definitions"):
-                metric_definitions.append(data_pipeline.get_metric_definitions())
+                metric_definitions.append(
+                    data_pipeline.get_metric_definitions())
         if self.tracker_evaluator is not None:
             if hasattr(self.tracker_evaluator, "get_metric_definitions"):
                 metric_definitions.append(
-                    self.tracker_evaluator.get_metric_definitions()
-                )
+                    self.tracker_evaluator.get_metric_definitions())
         if len(metric_definitions) == 0:
             metric_definitions = None
 
         return metric_definitions
 
+    # TRACED runner.run_iteration
     def run_iteration(self, model, data):
         samples, targets, miscellanies_on_host, miscellanies_on_device = data
-        assert self.branch_name is not None
-        data_pipeline_on_host = get_branch_specific_objects(
-            self, self.branch_name, "data_pipeline_on_host"
-        )
-        tracker_evaluator = get_branch_specific_objects(
-            self, self.branch_name, "tracker_evaluator"
-        )
 
+        assert self.branch_name is not None
+
+        data_pipeline_on_host = get_branch_specific_objects(
+            self, self.branch_name, "data_pipeline_on_host")
+
+        tracker_evaluator = get_branch_specific_objects(
+            self, self.branch_name, "tracker_evaluator")
+
+        # pre_processing
         if data_pipeline_on_host is not None:
             for data_pipeline in data_pipeline_on_host:
                 if hasattr(data_pipeline, "pre_processing"):
@@ -63,32 +66,38 @@ class DefaultSiamFCEvaluator(BaseRunner):
                         targets,
                         miscellanies_on_host,
                         miscellanies_on_device,
-                    ) = data_pipeline.pre_processing(
-                        samples, targets, miscellanies_on_host, miscellanies_on_device
-                    )
+                    ) = data_pipeline.pre_processing(samples, targets,
+                                                     miscellanies_on_host,
+                                                     miscellanies_on_device)
 
+        # TRACED outputs
         outputs = None
         if tracker_evaluator is None:
             if samples is not None:
                 outputs = _run_fn(samples, samples)
         else:
             initialization_samples = tracker_evaluator.pre_initialization(
-                samples, targets, miscellanies_on_host, miscellanies_on_device
-            )
+                samples, targets, miscellanies_on_host, miscellanies_on_device)
+
+            # TRACED
             tracker_initialization_results = None
+
             if initialization_samples is not None:
                 tracker_initialization_results = _run_fn(
-                    model.initialize, initialization_samples
-                )
+                    model.initialize, initialization_samples)
+
             tracking_samples = tracker_evaluator.on_initialized(
-                tracker_initialization_results
-            )
+                tracker_initialization_results)
+
             if tracking_samples is not None:
                 outputs = _run_fn(model.track, tracking_samples)
             outputs = tracker_evaluator.post_tracking(outputs)
 
+        # post_processing: test 没有追踪到，难道是只有 train 的时候才有该步骤？
+        # 到这里的时候 outputs 为什么为 []，里面为什么没有数据
         if data_pipeline_on_host is not None:
             for data_pipeline in reversed(data_pipeline_on_host):
+                # TRACED data/tracking/methods/sequential/metric_collector/metric_collector.py
                 if hasattr(data_pipeline, "post_processing"):
                     outputs = data_pipeline.post_processing(outputs)
 
@@ -96,12 +105,17 @@ class DefaultSiamFCEvaluator(BaseRunner):
         if "data_pipeline" in data_pipelines:
             if self.data_pipeline_on_host is None:
                 self.data_pipeline_on_host = {}
+
             if branch_name not in self.data_pipeline_on_host:
                 self.data_pipeline_on_host[branch_name] = []
+
             for data_pipeline in data_pipelines["data_pipeline"]:
                 self.data_pipeline_on_host[branch_name].append(data_pipeline)
+
         if "tracker_evaluator" in data_pipelines:
             if self.tracker_evaluator is None:
                 self.tracker_evaluator = {}
+
             assert branch_name not in self.tracker_evaluator
-            self.tracker_evaluator[branch_name] = data_pipelines["tracker_evaluator"]
+            self.tracker_evaluator[branch_name] = data_pipelines[
+                "tracker_evaluator"]

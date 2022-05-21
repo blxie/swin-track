@@ -7,6 +7,7 @@ from miscellanies.torch.tensor_movement_helper import (
 
 
 class DefaultTensorFilter:
+
     @staticmethod
     def get_tensor_list(data):
         return get_tensors_from_object(data)
@@ -17,6 +18,7 @@ class DefaultTensorFilter:
 
 
 class TensorFilteringByIndices:
+
     def __init__(self, indices):
         self.indices = indices
 
@@ -41,6 +43,7 @@ class TensorFilteringByIndices:
 
 
 class CUDAPrefetchTensorMover:
+
     def __init__(self, iterator, device, tensor_filter=None):
         if tensor_filter is None:
             tensor_filter = DefaultTensorFilter
@@ -90,12 +93,12 @@ class CUDAPrefetchTensorMover:
 
         with torch.cuda.stream(self.stream):
             for i in range(len(self.tensor_list)):
-                self.tensor_list[i] = self.tensor_list[i].to(
-                    self.device, non_blocking=True
-                )
+                self.tensor_list[i] = self.tensor_list[i].to(self.device,
+                                                             non_blocking=True)
 
 
 class TensorMover:
+
     def __init__(self, iterator, device, tensor_filter=None):
         if tensor_filter is None:
             tensor_filter = DefaultTensorFilter
@@ -122,9 +125,10 @@ class TensorMover:
         return data
 
 
-def build_tensor_device_movement_helper(
-    iterator, device, tensor_filter=None, prefetch=False
-):
+def build_tensor_device_movement_helper(iterator,
+                                        device,
+                                        tensor_filter=None,
+                                        prefetch=False):
     if "cuda" == device.type and prefetch:
         return CUDAPrefetchTensorMover(iterator, device, tensor_filter)
     else:

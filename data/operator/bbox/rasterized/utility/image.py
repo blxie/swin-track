@@ -7,7 +7,8 @@ def bounding_box_is_intersect_with_image(bounding_box, image_size):
     image_bounding_box = get_image_bounding_box(image_size)
     from data.operator.bbox.intersection import bbox_get_intersection
     from data.operator.bbox.validity import bbox_is_valid
-    return bbox_is_valid(bbox_get_intersection(image_bounding_box, bounding_box))
+    return bbox_is_valid(
+        bbox_get_intersection(image_bounding_box, bounding_box))
 
 
 def bounding_box_is_intersect_with_image_polygon(bounding_box, image_size):

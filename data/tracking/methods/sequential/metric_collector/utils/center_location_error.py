@@ -1,7 +1,9 @@
 import numpy as np
 
 
-def calculate_center_location_error_torch_vectorized(pred_bb, anno_bb, normalized=False):
+def calculate_center_location_error_torch_vectorized(pred_bb,
+                                                     anno_bb,
+                                                     normalized=False):
     pred_center = (pred_bb[:, :2] + pred_bb[:, 2:]) / 2.
     anno_center = (anno_bb[:, :2] + anno_bb[:, 2:]) / 2.
 

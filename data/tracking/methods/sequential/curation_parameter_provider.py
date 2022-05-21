@@ -7,7 +7,8 @@ from data.operator.bbox.spatial.vectorized.torch.validity import bbox_is_valid_v
 from data.operator.bbox.spatial.vectorized.torch.xyxy_to_cxcywh import box_xyxy_to_cxcywh
 
 
-def _get_scaling_and_translation_parameters(bounding_box, area_factor, output_size):
+def _get_scaling_and_translation_parameters(bounding_box, area_factor,
+                                            output_size):
     curation_parameter = torch.empty([3, 2], dtype=torch.float64)
     scaling_factor, source_center, target_center = curation_parameter.unbind(0)
 
@@ -18,7 +19,8 @@ def _get_scaling_and_translation_parameters(bounding_box, area_factor, output_si
 
     w_z = w + background_size
     h_z = h + background_size
-    scaling_factor[:] = ((output_size[0] * output_size[1]) / (w_z * h_z)).sqrt()
+    scaling_factor[:] = ((output_size[0] * output_size[1]) /
+                         (w_z * h_z)).sqrt()
 
     source_center[0] = (bounding_box[0] + bounding_box[2]) / 2
     source_center[1] = (bounding_box[1] + bounding_box[3]) / 2
@@ -37,30 +39,36 @@ def _adjust_bbox_size(bounding_box, min_wh):
 
 
 def _check_is_bounding_box_valid(bounding_box, image_size):
-    if not (bounding_box[0] < bounding_box[2] and bounding_box[1] < bounding_box[3]):
+    if not (bounding_box[0] < bounding_box[2]
+            and bounding_box[1] < bounding_box[3]):
         return False
 
     image_bounding_box = torch.zeros((4, ), dtype=torch.float64)
-    image_bounding_box[2: 4] = image_size
+    image_bounding_box[2:4] = image_size
 
-    return bbox_is_valid_vectorized(bbox_compute_intersection_vectorized(bounding_box, image_bounding_box))
+    return bbox_is_valid_vectorized(
+        bbox_compute_intersection_vectorized(bounding_box, image_bounding_box))
 
 
 class SiamFCCurationParameterSimpleProvider:
+
     def __init__(self, area_factor, min_object_size=None):
         self.area_factor = area_factor
         self.cached_bounding_box = torch.empty((4, ), dtype=torch.float64)
         self.min_object_size = min_object_size
 
     def initialize(self, bounding_box):
-        assert bounding_box[0] < bounding_box[2] and bounding_box[1] < bounding_box[3]
+        assert bounding_box[0] < bounding_box[2] and bounding_box[
+            1] < bounding_box[3]
         self.cached_bounding_box[:] = bounding_box
 
     def get(self, curated_image_size):
         bounding_box = self.cached_bounding_box
         if self.min_object_size is not None:
-            bounding_box = _adjust_bbox_size(bounding_box, self.min_object_size)
-        curation_parameter = _get_scaling_and_translation_parameters(bounding_box, self.area_factor, curated_image_size)
+            bounding_box = _adjust_bbox_size(bounding_box,
+                                             self.min_object_size)
+        curation_parameter = _get_scaling_and_translation_parameters(
+            bounding_box, self.area_factor, curated_image_size)
         assert not torch.any(torch.isnan(curation_parameter))
         return curation_parameter
 

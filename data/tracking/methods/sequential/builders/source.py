@@ -9,18 +9,14 @@ from data.tracking.sampler.sequential.dataset_sampler import (
 from core.run.event_dispatcher.register import EventRegister
 from data.tracking.methods._common.builders.build_datasets import build_datasets
 from data.tracking.methods._common.builders.build_dataset_sampler import (
-    build_dataset_sampler,
-)
+    build_dataset_sampler, )
 from data.tracking.methods._common.builders.samplers_per_epoch import (
-    get_samples_per_epoch,
-)
+    get_samples_per_epoch, )
 from data.tracking.methods._common.builders.reproducibility import (
-    get_reproducibility_parameters,
-)
+    get_reproducibility_parameters, )
 from data.tracking.methods._common.builders.build_dataloader import build_dataloader
 from data.tracking.methods._common.builders.sequence_progress_tracker import (
-    SequenceProcessTracking,
-)
+    SequenceProcessTracking, )
 from .components.data_processor import build_sequential_sampling_data_processor
 
 
@@ -57,30 +53,32 @@ def build_sequential_sampling_data_source(
         batch_size,
         post_processor,
         data_collator,
-    ) = build_sequential_sampling_data_processor(
-        runtime_vars, data_config, config, datasets, context
-    )
+    ) = build_sequential_sampling_data_processor(runtime_vars, data_config,
+                                                 config, datasets, context)
 
-    samples_per_epoch = get_samples_per_epoch(
-        datasets, sampling_config, per_frame=True, align=batch_size, drop_last=False
-    )
+    samples_per_epoch = get_samples_per_epoch(datasets,
+                                              sampling_config,
+                                              per_frame=True,
+                                              align=batch_size,
+                                              drop_last=False)
 
-    rng_engine_seed, reset_per_epoch = get_reproducibility_parameters(sampling_config)
+    rng_engine_seed, reset_per_epoch = get_reproducibility_parameters(
+        sampling_config)
 
     samplers = [
-        SequentialDatasetSampler(sequence_picker, datasets) for _ in range(batch_size)
+        SequentialDatasetSampler(sequence_picker, datasets)
+        for _ in range(batch_size)
     ]
     dataset = SequentialDataset(samplers, post_processor)
 
     if sampling_config["dataset_sampling"]["type"] == "run_through":
         torch_dataset = ForwardIteratorWrapperIterableDataset(
-            dataset, samples_per_epoch, rng_engine_seed
-        )
+            dataset, samples_per_epoch, rng_engine_seed)
         worker_init_fn = ForwardIteratorWrapperIterableDataset.worker_init_function
     else:
-        torch_dataset = ForwardIteratorWrapperDataset(
-            dataset, samples_per_epoch, rng_engine_seed
-        )
+        torch_dataset = ForwardIteratorWrapperDataset(dataset,
+                                                      samples_per_epoch,
+                                                      rng_engine_seed)
         worker_init_fn = ForwardIteratorWrapperDataset.worker_init_function
 
     if reset_per_epoch:
@@ -95,21 +93,18 @@ def build_sequential_sampling_data_source(
         data_collator,
     )
 
-    if (
-        sampling_config["dataset_sampling"]["type"] == "run_through"
-        and runtime_vars.num_workers > 1
-    ):
+    if (sampling_config["dataset_sampling"]["type"] == "run_through"
+            and runtime_vars.num_workers > 1):
         from ..pipeline.common import IterableDatasetWorkerDataFilter
 
-        dataloader = IterableDatasetWorkerDataFilter(
-            dataloader, runtime_vars.num_workers
-        )
+        dataloader = IterableDatasetWorkerDataFilter(dataloader,
+                                                     runtime_vars.num_workers)
 
     data_pipeline = None
 
     if sampling_config["dataset_sampling"]["type"] == "run_through":
         dataloader = SequenceProcessTracking(dataloader, sequence_picker)
-        data_pipeline = {"data_pipeline": (dataloader,)}
+        data_pipeline = {"data_pipeline": (dataloader, )}
 
     context["iterations_per_epoch"] = len(dataloader)
 

@@ -4,6 +4,7 @@ import torch
 
 
 class _BaseWrapperDataset(torch.utils.data.Dataset):
+
     def __init__(self, sampler, samples_per_epoch, fixed_seed=None):
         self.dataset_sampler = sampler
         self.samples_per_epoch = samples_per_epoch
@@ -27,22 +28,27 @@ class _BaseWrapperDataset(torch.utils.data.Dataset):
 
 
 class ForwardIteratorWrapperDataset(_BaseWrapperDataset):
+
     def __init__(self, sampler, samples_per_epoch, fixed_seed=None):
-        super(ForwardIteratorWrapperDataset, self).__init__(sampler, samples_per_epoch, fixed_seed)
+        super(ForwardIteratorWrapperDataset,
+              self).__init__(sampler, samples_per_epoch, fixed_seed)
 
     def __getitem__(self, _):
         return self.dataset_sampler.get_next(self.rng_engine)
 
 
 class RandomAccessIteratorWrapperDataset(_BaseWrapperDataset):
+
     def __init__(self, sampler, samples_per_epoch, fixed_seed=None):
-        super(RandomAccessIteratorWrapperDataset, self).__init__(sampler, samples_per_epoch, fixed_seed)
+        super(RandomAccessIteratorWrapperDataset,
+              self).__init__(sampler, samples_per_epoch, fixed_seed)
 
     def __getitem__(self, index):
         return self.dataset_sampler.get(index, self.rng_engine)
 
 
 class ForwardIteratorWrapperIterableDataset(torch.utils.data.IterableDataset):
+
     def __init__(self, sampler, estimated_samples_per_epoch, fixed_seed=None):
         self.dataset_sampler = sampler
         self.estimated_samples_per_epoch = estimated_samples_per_epoch

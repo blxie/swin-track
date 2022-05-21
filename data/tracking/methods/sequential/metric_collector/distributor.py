@@ -2,6 +2,7 @@ import re
 
 
 class SequenceDistributor:
+
     def __init__(self, rules):
         self.rules = tuple(re.compile(rule) for rule in rules)
 
@@ -17,8 +18,11 @@ class SequenceDistributor:
                     collated_sequences[index].append(collected_sequence)
                     dispatched = True
                     break
-            assert dispatched, "No rule matched the dataset unique id: {}".format(dataset_unique_id)
+            assert dispatched, "No rule matched the dataset unique id: {}".format(
+                dataset_unique_id)
 
-        for collated_sequence, sub_collector in zip(collated_sequences, sub_collectors):
+        for collated_sequence, sub_collector in zip(collated_sequences,
+                                                    sub_collectors):
             if collated_sequence is not None:
-                sub_collector.accept_evaluated_sequence(collated_sequence, io_thread)
+                sub_collector.accept_evaluated_sequence(
+                    collated_sequence, io_thread)

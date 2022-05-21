@@ -3,7 +3,8 @@ from ...pipeline.processor import SiamTrackerProcessor, SiamFCBatchDataCollator
 from ...common.metric_collector import SiamFCMetricCollector
 
 
-def _build_siamfc_data_processor(network_data_config: dict, data_processor_config, label_generator,
+def _build_siamfc_data_processor(network_data_config: dict,
+                                 data_processor_config, label_generator,
                                  label_batch_data_collator):
     assert network_data_config['imagenet_normalization'] is True
     return SiamTrackerProcessor(network_data_config['template_size'], network_data_config['search_size'],
@@ -27,9 +28,11 @@ def get_additional_metric_collector():
 def build_siamfc_tracker_data_processor(data_config, network_config: dict):
     processor_config = data_config['processor']
     if processor_config['type'] == 'SiamFC':
-        label_generator, label_batch_collator = build_label_generator_and_batch_collator(network_config)
+        label_generator, label_batch_collator = build_label_generator_and_batch_collator(
+            network_config)
         data_processor, data_batch_collator = _build_siamfc_data_processor(
-            network_config['data'], processor_config, label_generator, label_batch_collator)
+            network_config['data'], processor_config, label_generator,
+            label_batch_collator)
     else:
         raise NotImplementedError(processor_config['type'])
 

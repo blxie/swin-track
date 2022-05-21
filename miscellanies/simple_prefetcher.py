@@ -1,8 +1,10 @@
 import threading
 
+
 # Notices: 1. The correctness is relied on GIL
 #          2. Iterator is not thread-safe, so don't access by different threads in the same time
 class _SimplePrefetcherIterator:
+
     def __init__(self, iterable, low_limit: int, high_limit: int):
         super(_SimplePrefetcherIterator, self).__init__()
         self.iterable = iterable
@@ -79,7 +81,11 @@ class _SimplePrefetcherIterator:
 
 
 class SimplePrefetcher:
-    def __init__(self, iterable, buffer_low_limit: int = 1, buffer_high_limit: int = 3):
+
+    def __init__(self,
+                 iterable,
+                 buffer_low_limit: int = 1,
+                 buffer_high_limit: int = 3):
         assert buffer_low_limit < buffer_high_limit
         assert buffer_low_limit >= 0
         self.iterable = iterable
@@ -87,7 +93,8 @@ class SimplePrefetcher:
         self.high_limit = buffer_high_limit
 
     def __iter__(self):
-        return _SimplePrefetcherIterator(self.iterable, self.low_limit, self.high_limit)
+        return _SimplePrefetcherIterator(self.iterable, self.low_limit,
+                                         self.high_limit)
 
     def __len__(self):
         return len(self.iterable)

@@ -46,4 +46,4 @@ def build_siamfc_data_source(
     context["iterations_per_epoch"] = len(dataloader)
     context["batch_size"] = data_config["batch_size"]
 
-    return dataloader, {"data_pipeline": (metric_collector,)}
+    return dataloader, {"data_pipeline": (metric_collector, )}

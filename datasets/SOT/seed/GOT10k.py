@@ -3,7 +3,12 @@ from datasets.types.data_split import DataSplit
 
 
 class GOT10k_Seed(BaseSeed):
-    def __init__(self, root_path: str=None, data_split: DataSplit = DataSplit.Training | DataSplit.Validation, sequence_filter=None):
+
+    def __init__(self,
+                 root_path: str = None,
+                 data_split: DataSplit = DataSplit.Training
+                 | DataSplit.Validation,
+                 sequence_filter=None):
         if root_path is None:
             root_path = self.get_path_from_config('GOT10k_PATH')
         self.sequence_filter = sequence_filter

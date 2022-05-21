@@ -57,7 +57,24 @@
                 "8",
                 "--watch_model_gradients",
                 "--watch_model_parameters",
+                "--wandb_run_offline",
+                "--distributed_do_spawn_workers",
+                "--distributed_nproc_per_node",
+                "3",
+                // "--do_sweep",
+                // "--wandb_distributed_aware"
             ]
+        },
+        {
+            "name": "visulaize",
+            "type": "python",
+            "request": "launch",
+            "program": "${file}",
+            "console": "integratedTerminal",
+            "justMyCode": true,
+            "env": {
+                "DISPLAY": "10.16.26.116:0.0"
+            }
         },
     ]
 }

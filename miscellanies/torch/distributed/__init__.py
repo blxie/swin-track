@@ -64,9 +64,13 @@ def init_distributed_mode(args):
         args.dist_backend = 'nccl'
     else:
         args.dist_backend = 'gloo'
-    print(f'| distributed init (rank {args.rank}[{args.rank // args.local_world_size}.{args.local_rank}]/{args.world_size}) using {args.dist_backend}', flush=True)
-    torch.distributed.init_process_group(backend=args.dist_backend, init_method='env://',
-                                         world_size=args.world_size, rank=args.rank)
+    print(
+        f'| distributed init (rank {args.rank}[{args.rank // args.local_world_size}.{args.local_rank}]/{args.world_size}) using {args.dist_backend}',
+        flush=True)
+    torch.distributed.init_process_group(backend=args.dist_backend,
+                                         init_method='env://',
+                                         world_size=args.world_size,
+                                         rank=args.rank)
     torch.distributed.barrier()
     if not args.debug:
         setup_for_distributed(args.local_rank == 0)

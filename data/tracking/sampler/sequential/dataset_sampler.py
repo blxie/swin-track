@@ -9,8 +9,6 @@ from datasets.MOT.dataset import MultipleObjectTrackingDatasetSequence_MemoryMap
 from datasets.DET.dataset import DetectionDatasetImage_MemoryMapped
 
 import uuid
-
-
 '''
 RandomSampling support DET SOT MOT
 RunThrough support SOT only
@@ -18,11 +16,14 @@ RunThrough support SOT only
 
 
 class _SequentialDatasetWrapper:
+
     def __init__(self, sequence, rng_engine):
-        if isinstance(sequence, SingleObjectTrackingDatasetSequence_MemoryMapped):
+        if isinstance(sequence,
+                      SingleObjectTrackingDatasetSequence_MemoryMapped):
             sequence = SOTSequenceSequentialSampler(sequence)
             assert sequence.length() > 1
-        elif isinstance(sequence, MultipleObjectTrackingDatasetSequence_MemoryMapped):
+        elif isinstance(sequence,
+                        MultipleObjectTrackingDatasetSequence_MemoryMapped):
             sequence = MOTSequenceSequentialSampler(sequence, rng_engine)
             assert sequence.length() > 1
         elif isinstance(sequence, DetectionDatasetImage_MemoryMapped):
@@ -73,6 +74,7 @@ class _SequentialDatasetWrapper:
 
 
 class SequentialDatasetSampler:
+
     def __init__(self, sequence_picker, datasets):
         self.sequence_picker = sequence_picker
 
@@ -95,10 +97,14 @@ class SequentialDatasetSampler:
             self.sequence = _SequentialDatasetWrapper(sequence, rng_engine)
             self.uuid = uuid.uuid1()
 
-        return self.uuid, self.sequence.get_name(), self.dataset_unique_id, self.sequence.get_position(), self.sequence.get_length(), self.sequence.get_template(), self.sequence.current()
+        return self.uuid, self.sequence.get_name(
+        ), self.dataset_unique_id, self.sequence.get_position(
+        ), self.sequence.get_length(), self.sequence.get_template(
+        ), self.sequence.current()
 
 
 class SequentialDataset:
+
     def __init__(self, samplers, post_processor):
         self.samplers = samplers
         self.post_processor = post_processor
@@ -111,4 +117,5 @@ class SequentialDataset:
                 break
             except StopIteration:
                 self.index_iter = iter(range(len(self.samplers)))
-        return self.post_processor(index, self.samplers[index].get_next(rng_engine))
+        return self.post_processor(index,
+                                   self.samplers[index].get_next(rng_engine))

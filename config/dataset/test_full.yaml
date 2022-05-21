@@ -26,6 +26,7 @@ datasets:
     splits:
       - "val"
 
+  # 注意这里不能写成 `LaSOT_Extension`，必须加 `:`
   LaSOT_Extension:
 
   TrackingNet:

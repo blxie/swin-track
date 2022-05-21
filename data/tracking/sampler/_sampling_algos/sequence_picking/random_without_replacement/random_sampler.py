@@ -3,8 +3,11 @@ from data.tracking.sampler._sampling_algos.sequence_picking.random_without_repla
 
 
 class RandomSequencePickingOrchestrationServer:
-    def __init__(self, datasets, datasets_sampling_probability, socket_address, seed: int):
-        self.server_callback = ApiGatewayRandomSamplerServerHandler(datasets, datasets_sampling_probability, seed)
+
+    def __init__(self, datasets, datasets_sampling_probability, socket_address,
+                 seed: int):
+        self.server_callback = ApiGatewayRandomSamplerServerHandler(
+            datasets, datasets_sampling_probability, seed)
         self.server = ServerLauncher(socket_address, self.server_callback)
         self.client = Client(socket_address)
 
@@ -43,6 +46,7 @@ class RandomSequencePickingOrchestrationServer:
 
 
 class RandomSequencePickingClient:
+
     def __init__(self, socket_address):
         self.client = Client(socket_address)
 

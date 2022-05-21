@@ -7,12 +7,10 @@ from datasets.base.common.constructor import (
     BaseVideoDatasetConstructor,
 )
 
-
 __all__ = [
     "SingleObjectTrackingDatasetConstructor",
     "SingleObjectTrackingDatasetConstructorGenerator",
 ]
-
 """
 {
     version: '',
@@ -50,6 +48,7 @@ __all__ = [
 
 
 class SingleObjectTrackingDatasetFrameConstructor:
+
     def __init__(self, frame, root_path, context):
         self.frame = frame
         self.root_path = root_path
@@ -66,7 +65,8 @@ class SingleObjectTrackingDatasetFrameConstructor:
 
     def set_bounding_box(self, bounding_box, validity=None, dtype=None):
         self._try_allocate_object()
-        set_bounding_box_(self.object, bounding_box, validity, dtype, self.context)
+        set_bounding_box_(self.object, bounding_box, validity, dtype,
+                          self.context)
 
     def set_object_attribute(self, name, value):
         self._try_allocate_object()
@@ -77,6 +77,7 @@ class SingleObjectTrackingDatasetFrameConstructor:
 
 
 class SingleObjectTrackingDatasetFrameConstructorGenerator:
+
     def __init__(self, frame, root_path, context):
         self.frame = frame
         self.root_path = root_path
@@ -84,18 +85,18 @@ class SingleObjectTrackingDatasetFrameConstructorGenerator:
 
     def __enter__(self):
         return SingleObjectTrackingDatasetFrameConstructor(
-            self.frame, self.root_path, self.context
-        )
+            self.frame, self.root_path, self.context)
 
     def __exit__(self, exc_type, exc_val, exc_tb):
         pass
 
 
-class SingleObjectTrackingDatasetSequenceConstructor(BaseDatasetSequenceConstructor):
+class SingleObjectTrackingDatasetSequenceConstructor(
+        BaseDatasetSequenceConstructor):
+
     def __init__(self, sequence: dict, root_path: str, context):
-        super(SingleObjectTrackingDatasetSequenceConstructor, self).__init__(
-            sequence, root_path, context
-        )
+        super(SingleObjectTrackingDatasetSequenceConstructor,
+              self).__init__(sequence, root_path, context)
         self.object_ = None
         if "objects" in self.sequence:
             self.object_ = self.sequence["objects"][0]
@@ -106,13 +107,11 @@ class SingleObjectTrackingDatasetSequenceConstructor(BaseDatasetSequenceConstruc
             self.sequence["frames"] = []
         self.sequence["frames"].append(frame)
         return SingleObjectTrackingDatasetFrameConstructorGenerator(
-            frame, self.root_path, self.context
-        )
+            frame, self.root_path, self.context)
 
     def open_frame(self, index: int):
         return SingleObjectTrackingDatasetFrameConstructorGenerator(
-            self.sequence["frames"][index], self.root_path, self.context
-        )
+            self.sequence["frames"][index], self.root_path, self.context)
 
     def set_object_attribute(self, name: str, value):
         if self.object_ is None:
@@ -123,12 +122,11 @@ class SingleObjectTrackingDatasetSequenceConstructor(BaseDatasetSequenceConstruc
 
 
 class SingleObjectTrackingDatasetSequenceConstructorGenerator(
-    BaseDatasetSequenceConstructorGenerator
-):
+        BaseDatasetSequenceConstructorGenerator):
+
     def __init__(self, sequence, root_path, category_id, context):
-        super(SingleObjectTrackingDatasetSequenceConstructorGenerator, self).__init__(
-            sequence, context
-        )
+        super(SingleObjectTrackingDatasetSequenceConstructorGenerator,
+              self).__init__(sequence, context)
 
         self.root_path = root_path
         sequence_object_attributes = [{"id": 0}]
@@ -139,15 +137,14 @@ class SingleObjectTrackingDatasetSequenceConstructorGenerator(
 
     def __enter__(self):
         return SingleObjectTrackingDatasetSequenceConstructor(
-            self.sequence, self.root_path, self.context
-        )
+            self.sequence, self.root_path, self.context)
 
 
 class SingleObjectTrackingDatasetConstructor(BaseVideoDatasetConstructor):
+
     def __init__(self, dataset: dict, root_path: str, version: int, context):
-        super(SingleObjectTrackingDatasetConstructor, self).__init__(
-            dataset, root_path, version, context
-        )
+        super(SingleObjectTrackingDatasetConstructor,
+              self).__init__(dataset, root_path, version, context)
         if "sequences" not in dataset:
             dataset["sequences"] = []
 
@@ -157,12 +154,13 @@ class SingleObjectTrackingDatasetConstructor(BaseVideoDatasetConstructor):
         sequence = {}
         self.dataset["sequences"].append(sequence)
         return SingleObjectTrackingDatasetSequenceConstructorGenerator(
-            sequence, self.root_path, category_id, self.context
-        )
+            sequence, self.root_path, category_id, self.context)
 
 
-class SingleObjectTrackingDatasetConstructorGenerator(BaseDatasetConstructorGenerator):
+class SingleObjectTrackingDatasetConstructorGenerator(
+        BaseDatasetConstructorGenerator):
+
     def __init__(self, dataset: dict, root_path: str, version: int):
-        super(SingleObjectTrackingDatasetConstructorGenerator, self).__init__(
-            dataset, root_path, version, SingleObjectTrackingDatasetConstructor
-        )
+        super(SingleObjectTrackingDatasetConstructorGenerator,
+              self).__init__(dataset, root_path, version,
+                             SingleObjectTrackingDatasetConstructor)

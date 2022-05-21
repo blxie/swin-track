@@ -80,6 +80,7 @@ def run_iteration(
         event_dispatcher.epoch_begin(epoch)
 
         for data in logger.loggers["local"].log_every(data_loader):
+            # TRACED yield obj
             event_dispatcher.iteration_begin(is_training)
             logger.set_step(runner.get_iteration_index())
             runner.run_iteration(model, data)
@@ -119,6 +120,7 @@ class RunnerDriver:
         self.event_dispatcher = event_dispatcher
         self.runtime_vars = runtime_vars
         self.n_epochs = n_epochs
+        # TRACED runner
         self.runs = runs
         # TRACED core/run/builder.py build()
         self.wandb_instance = wandb_instance
@@ -191,7 +193,8 @@ class RunnerDriver:
                         epoch_interval,
                         run_in_last_epoch,
                         event_dispatcher,
-                ) in self.runs.items():
+                ) in self.runs.items(
+                ):  # runs.items() 表示 runs 是一个键值对的形式，也就是字典格式
                     assert epoch_interval >= 0
                     if is_training:
                         epoch_has_training_run = True

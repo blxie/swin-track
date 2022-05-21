@@ -5,11 +5,17 @@ from core.run.metric_logger.context import get_logger
 from runners.interface import BaseRunner
 
 
+# TRACED
 class DefaultTrainer(BaseRunner):
-    def __init__(self, criteria, optimizer,
+
+    def __init__(self,
+                 criteria,
+                 optimizer,
                  lr_scheduler_per_iteration,
-                 lr_scheduler_per_epoch, loss_composer,
-                 grad_max_norm=None, iteration_step=1):
+                 lr_scheduler_per_epoch,
+                 loss_composer,
+                 grad_max_norm=None,
+                 iteration_step=1):
         self.criteria = criteria
         self.loss_composer = loss_composer
 
@@ -41,21 +47,24 @@ class DefaultTrainer(BaseRunner):
     def get_metric_definitions(self):
         if self.is_train:
             runner_metric_definitions = {
-                'local': [
-                    {'name': 'lr', 'window_size': 1, 'fmt': '{value:.6f}'},
-                    {'name': 'loss'}
-                ]}
+                'local': [{
+                    'name': 'lr',
+                    'window_size': 1,
+                    'fmt': '{value:.6f}'
+                }, {
+                    'name': 'loss'
+                }]
+            }
         else:
-            runner_metric_definitions = {
-                'local': [
-                    {'name': 'loss'}
-                ]}
+            runner_metric_definitions = {'local': [{'name': 'loss'}]}
         metric_definitions = [runner_metric_definitions]
-        data_pipelines = get_branch_specific_objects(self, self.branch_name, 'data_pipeline_on_host')
+        data_pipelines = get_branch_specific_objects(self, self.branch_name,
+                                                     'data_pipeline_on_host')
         if data_pipelines is not None:
             for data_pipeline in data_pipelines:
                 if hasattr(data_pipeline, 'get_metric_definitions'):
-                    metric_definitions.append(data_pipeline.get_metric_definitions())
+                    metric_definitions.append(
+                        data_pipeline.get_metric_definitions())
         return metric_definitions
 
     def switch_branch(self, branch_name):
@@ -64,14 +73,19 @@ class DefaultTrainer(BaseRunner):
     def train(self, is_train):
         self.is_train = is_train
 
+    # TRACED
     def run_iteration(self, model, data):
         samples, targets, miscellanies_on_host, miscellanies_on_device = data
-        data_pipeline_on_host = get_branch_specific_objects(self, self.branch_name, 'data_pipeline_on_host')
+        data_pipeline_on_host = get_branch_specific_objects(
+            self, self.branch_name, 'data_pipeline_on_host')
         if data_pipeline_on_host is not None:
             for data_pipeline in data_pipeline_on_host:
                 if hasattr(data_pipeline, 'pre_processing'):
-                    samples, targets, miscellanies_on_host, miscellanies_on_device = data_pipeline.pre_processing(samples, targets, miscellanies_on_host, miscellanies_on_device)
+                    samples, targets, miscellanies_on_host, miscellanies_on_device = data_pipeline.pre_processing(
+                        samples, targets, miscellanies_on_host,
+                        miscellanies_on_device)
 
+        # TRACED output? 内容是什么
         outputs = None
         loss = None
         if samples is not None:
@@ -82,11 +96,14 @@ class DefaultTrainer(BaseRunner):
             else:
                 outputs = model(samples)
             if targets is not None:
-                loss, loss_value, loss_stats = self.loss_composer(self.criteria(outputs, targets))
+                loss, loss_value, loss_stats = self.loss_composer(
+                    self.criteria(outputs, targets))
                 get_logger().log({'loss': loss_value, **loss_stats})
 
                 if not math.isfinite(loss_value):
-                    raise RuntimeError(f"Loss is {loss_value}, stopping training\n{loss_stats}")
+                    raise RuntimeError(
+                        f"Loss is {loss_value}, stopping training\n{loss_stats}"
+                    )
 
         if data_pipeline_on_host is not None:
             for data_pipeline in reversed(data_pipeline_on_host):
@@ -97,7 +114,8 @@ class DefaultTrainer(BaseRunner):
             self.optimizer.zero_grad()
             loss.backward()
             if self.grad_max_norm is not None:
-                torch.nn.utils.clip_grad_norm_(model.parameters(), self.grad_max_norm)
+                torch.nn.utils.clip_grad_norm_(model.parameters(),
+                                               self.grad_max_norm)
             self.optimizer.step()
             if self.lr_scheduler_per_iteration is not None:
                 self.lr_scheduler_per_iteration.step()
@@ -108,19 +126,27 @@ class DefaultTrainer(BaseRunner):
             self.iteration_index += self.iteration_step
 
     def state_dict(self):
-        state_dict = {'optimizer': self.optimizer.state_dict(), 'iter': self.iteration_index}
+        state_dict = {
+            'optimizer': self.optimizer.state_dict(),
+            'iter': self.iteration_index
+        }
         if self.lr_scheduler_per_iteration is not None:
-            state_dict['lr_scheduler_per_iteration'] = self.lr_scheduler_per_iteration.state_dict()
+            state_dict[
+                'lr_scheduler_per_iteration'] = self.lr_scheduler_per_iteration.state_dict(
+                )
         if self.lr_scheduler_per_epoch is not None:
-            state_dict['lr_scheduler'] = self.lr_scheduler_per_epoch.state_dict()
+            state_dict[
+                'lr_scheduler'] = self.lr_scheduler_per_epoch.state_dict()
         return state_dict
 
     def load_state_dict(self, state_dict):
         self.optimizer.load_state_dict(state_dict['optimizer'])
         if self.lr_scheduler_per_iteration is not None:
-            self.lr_scheduler_per_iteration.load_state_dict(state_dict['lr_scheduler_per_iteration'])
+            self.lr_scheduler_per_iteration.load_state_dict(
+                state_dict['lr_scheduler_per_iteration'])
         if self.lr_scheduler_per_epoch is not None:
-            self.lr_scheduler_per_epoch.load_state_dict(state_dict['lr_scheduler'])
+            self.lr_scheduler_per_epoch.load_state_dict(
+                state_dict['lr_scheduler'])
         self.iteration_index = state_dict['iter']
 
     def on_device_changed(self, device):

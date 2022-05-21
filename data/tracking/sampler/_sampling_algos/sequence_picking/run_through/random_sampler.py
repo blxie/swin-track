@@ -1,14 +1,13 @@
 from miscellanies.simple_api_gateway import ServerLauncher, Client, CallbackFactory
 from data.tracking.sampler._sampling_algos.sequence_picking.run_through._server import (
-    ApiGatewayRunThroughSamplerServerHandler,
-)
+    ApiGatewayRunThroughSamplerServerHandler, )
 
 
 class RunThroughSequencePickingOrchestrationServer:
+
     def __init__(self, datasets, socket_address, seed: int):
         self.server_callback = CallbackFactory(
-            ApiGatewayRunThroughSamplerServerHandler, (datasets, seed)
-        )
+            ApiGatewayRunThroughSamplerServerHandler, (datasets, seed))
         self.server = ServerLauncher(socket_address, self.server_callback)
         self.client = Client(socket_address)
 
@@ -28,15 +27,11 @@ class RunThroughSequencePickingOrchestrationServer:
 
     def reset(self):
         if self.server.is_launched():
-            assert (
-                self.client(
-                    "reset",
-                )
-                == "ok"
-            )
+            assert (self.client("reset", ) == "ok")
 
 
 class RunThroughSequencePickingClient:
+
     def __init__(self, socket_address, rank):
         self.client = Client(socket_address)
         if rank is None:
@@ -51,8 +46,7 @@ class RunThroughSequencePickingClient:
             return None
         """
         index_of_dataset, index_of_sequence, is_done = self.client(
-            "get_next", self.rank
-        )
+            "get_next", self.rank)
 
         if is_done:
             raise StopIteration
@@ -61,7 +55,8 @@ class RunThroughSequencePickingClient:
         return index_of_dataset, index_of_sequence
 
     def mark_done_and_get_status(self, index_iteration, num):
-        return self.client("mark_done_and_get_status", self.rank, index_iteration, num)
+        return self.client("mark_done_and_get_status", self.rank,
+                           index_iteration, num)
 
     def start(self):
         self.client.start()

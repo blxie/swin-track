@@ -122,6 +122,7 @@ note: our code performs evaluation automatically when training is done, output i
 ```shell
 # Tiny
 python main.py SwinTrack Tiny --distributed_nproc_per_node $num_gpus --distributed_do_spawn_workers --output_dir /path/to/output --num_workers $num_dataloader_workers
+python main.py SwinTrack Tiny --distributed_nproc_per_node 3 --distributed_do_spawn_workers --output_dir output --num_workers 8
 ```
 ### Train and evaluate on multiple nodes with multiple GPUs using DDP
 ```shell

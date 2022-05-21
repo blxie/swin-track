@@ -2,6 +2,7 @@ from typing import Optional, List
 
 
 class BaseRunner:
+
     def get_iteration_index(self) -> Optional[int]:
         raise NotImplementedError
 

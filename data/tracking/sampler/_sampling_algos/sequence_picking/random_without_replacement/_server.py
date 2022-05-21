@@ -2,6 +2,7 @@ import numpy as np
 
 
 class ApiGatewayRandomSamplerServerHandler:
+
     def __init__(self, datasets, datasets_sampling_probability, seed):
         self.datasets_sampling_probability = datasets_sampling_probability
         self.rng_engine = np.random.Generator(np.random.PCG64(seed))
@@ -22,17 +23,20 @@ class ApiGatewayRandomSamplerServerHandler:
     def __call__(self, command, response):
         if command[0] == 'get_status':
             str_ = ''
-            for dataset_id, dataset_state in zip(self.dataset_ids, self.datasets):
+            for dataset_id, dataset_state in zip(self.dataset_ids,
+                                                 self.datasets):
                 str_ += f'{dataset_id}({dataset_state[0]}): {dataset_state[3]} times + {dataset_state[4]}\n'
             response.set_body(str_)
         elif command[0] == 'get_next':
             if self.datasets_sampling_probability is not None:
-                index_of_dataset = self.rng_engine.choice(self.dataset_indices, p=self.datasets_sampling_probability)
+                index_of_dataset = self.rng_engine.choice(
+                    self.dataset_indices, p=self.datasets_sampling_probability)
             else:
                 index_of_dataset = self.rng_engine.integers(len(self.datasets))
             dataset_state = self.datasets[index_of_dataset]
             dataset_length, dataset_indices, _, _, _ = dataset_state
-            response.set_body((index_of_dataset, dataset_indices[dataset_state[4]]))
+            response.set_body(
+                (index_of_dataset, dataset_indices[dataset_state[4]]))
             response.commit()
             dataset_state[4] += 1
             if dataset_state[4] == dataset_length:

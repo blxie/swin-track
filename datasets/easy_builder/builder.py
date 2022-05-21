@@ -58,18 +58,18 @@ def parse_filters(config):
     for filter_key, filter_value in config.items():
         if filter_key == "DataCleaning":
             for (
-                filter_data_cleaning_key,
-                filter_data_cleaning_value,
+                    filter_data_cleaning_key,
+                    filter_data_cleaning_value,
             ) in filter_value.items():
                 module = importlib.import_module(
-                    "datasets.filter.DataCleaning.{}".format(filter_data_cleaning_key)
-                )
+                    "datasets.filter.DataCleaning.{}".format(
+                        filter_data_cleaning_key))
                 filter_class = getattr(
-                    module, "DataCleaning_{}".format(filter_data_cleaning_key)
-                )
+                    module, "DataCleaning_{}".format(filter_data_cleaning_key))
                 filters.append(filter_class(**filter_data_cleaning_value))
         else:
-            module = importlib.import_module("datasets.filter.{}".format(filter_key))
+            module = importlib.import_module(
+                "datasets.filter.{}".format(filter_key))
             filter_class = getattr(module, filter_key)
             filters.append(filter_class(**filter_value))
     return filters
@@ -82,8 +82,8 @@ def _default_unknown_parameter_handler(datasets, parameters):
 
 
 def build_datasets(
-    config: dict, unknown_parameter_handler=_default_unknown_parameter_handler
-):
+        config: dict,
+        unknown_parameter_handler=_default_unknown_parameter_handler):
     filters = []
     if "filters" in config:
         dataset_filter_names = config["filters"]
@@ -95,13 +95,14 @@ def build_datasets(
     if "config" in config:
         dataset_building_config = config["config"]
         if "bounding_box" in dataset_building_config:
-            bounding_box_building_config = dataset_building_config["bounding_box"]
+            bounding_box_building_config = dataset_building_config[
+                "bounding_box"]
             if "format" in bounding_box_building_config:
                 constructor_params["bounding_box_format"] = BoundingBoxFormat[
-                    bounding_box_building_config["format"]
-                ]
+                    bounding_box_building_config["format"]]
         if "dump_human_readable" in config:
-            constructor_params["dump_human_readable"] = config["dump_human_readable"]
+            constructor_params["dump_human_readable"] = config[
+                "dump_human_readable"]
         if "cache_meta_data" in config:
             constructor_params["cache_meta_data"] = config["cache_meta_data"]
 
@@ -116,22 +117,19 @@ def build_datasets(
             from datasets.SOT.factory import SingleObjectTrackingDatasetFactory
 
             module = importlib.import_module(
-                "datasets.SOT.seed.{}".format(dataset_name)
-            )
+                "datasets.SOT.seed.{}".format(dataset_name))
             factory_class = SingleObjectTrackingDatasetFactory
         elif dataset_type == "MOT":
             from datasets.MOT.factory import MultipleObjectTrackingDatasetFactory
 
             module = importlib.import_module(
-                "datasets.MOT.seed.{}".format(dataset_name)
-            )
+                "datasets.MOT.seed.{}".format(dataset_name))
             factory_class = MultipleObjectTrackingDatasetFactory
         elif dataset_type == "DET":
             from datasets.DET.factory import DetectionDatasetFactory
 
             module = importlib.import_module(
-                "datasets.DET.seed.{}".format(dataset_name)
-            )
+                "datasets.DET.seed.{}".format(dataset_name))
             factory_class = DetectionDatasetFactory
         else:
             raise Exception("Unsupported dataset type {}".format(dataset_type))
@@ -145,12 +143,12 @@ def build_datasets(
             seed = seed_class(root_path=path)
 
         seed.data_split = get_data_split_from_config(
-            dataset_building_parameter["splits"]
-        )
+            dataset_building_parameter["splits"])
         factory = factory_class([seed])
 
         if "filters" in dataset_building_parameter:
-            dataset_filters = parse_filters(dataset_building_parameter["filters"])
+            dataset_filters = parse_filters(
+                dataset_building_parameter["filters"])
             dataset_filters.extend(filters)
         else:
             dataset_filters = filters
@@ -162,23 +160,28 @@ def build_datasets(
 
         extra_parameters.extend(
             unknown_parameter_handler(
-                dataset, get_unknown_parameters(dataset_building_parameter)
-            )
-        )
+                dataset, get_unknown_parameters(dataset_building_parameter)))
         datasets.extend(dataset)
 
     return datasets, extra_parameters
 
 
 def build_datasets_from_config(
-    config: dict, unknown_parameter_handler=_default_unknown_parameter_handler
-):
-    with open(os.path.join(os.path.dirname(__file__), "defaults.yaml"), "rb") as fid:
+        config: dict,
+        unknown_parameter_handler=_default_unknown_parameter_handler):
+    with open(os.path.join(os.path.dirname(__file__), "defaults.yaml"),
+              "rb") as fid:
         default = yaml.safe_load(fid)
     default = default["datasets"]
     dataset_config = merge_config(default, config["datasets"])
+
+    # 在 4 大数据集上进行测试
     config["datasets"] = dataset_config
+
     # 只使用 GOT-10k 进行测试
-    # config["datasets"] = {"GOT10k": {"type": "SOT", "splits": ["val", "test"]}}
-    # print(">>>config datasets:", config["datasets"])
+    config["datasets"] = {"GOT10k": {"type": "SOT", "splits": ["val", "test"]}}
+    # config["datasets"] = {"GOT10k": {"type": "SOT", "splits": ["test"]}}
+    # config["datasets"] = {"TrackingNet": {"type": "SOT", "splits": ["test"]}}
+    print(">>>config datasets:", config["datasets"])
+
     return build_datasets(config, unknown_parameter_handler)

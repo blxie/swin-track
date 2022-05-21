@@ -29,6 +29,7 @@ class IterableDatasetWorkerDataFilter:
             self.index += 1
             if self.index >= self.num_workers:
                 self.index = 0
+            # miscellaneous 杂项，混合体
             sample, label, misc_on_host, misc_on_device = next(
                 self.data_loader_iter)
 

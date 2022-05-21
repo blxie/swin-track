@@ -4,28 +4,32 @@ from data.types.bounding_box_coordinate_system import BoundingBoxCoordinateSyste
 from data.types.pixel_definition import PixelDefinition
 
 
-def bbox_xyxy_transform(bbox, source_pixel_coordinate_system: PixelCoordinateSystem,
-                   target_pixel_coordinate_system: PixelCoordinateSystem,
-                   source_bounding_box_coordinate_system: BoundingBoxCoordinateSystem,
-                   target_bounding_box_coordinate_system: BoundingBoxCoordinateSystem,
-                   pixel_definition: PixelDefinition):
+def bbox_xyxy_transform(
+        bbox, source_pixel_coordinate_system: PixelCoordinateSystem,
+        target_pixel_coordinate_system: PixelCoordinateSystem,
+        source_bounding_box_coordinate_system: BoundingBoxCoordinateSystem,
+        target_bounding_box_coordinate_system: BoundingBoxCoordinateSystem,
+        pixel_definition: PixelDefinition):
     if source_bounding_box_coordinate_system == BoundingBoxCoordinateSystem.Rasterized:
         if source_pixel_coordinate_system == PixelCoordinateSystem.Aligned:
             from data.operator.bbox.transform.spatialize.aligned import bbox_spatialize_aligned_xyxy
             bbox = bbox_spatialize_aligned_xyxy(bbox, pixel_definition)
         else:
             from data.operator.bbox.transform.spatialize.half_pixel_offset import bbox_spatialize_half_pixel_offset_xyxy
-            bbox = bbox_spatialize_half_pixel_offset_xyxy(bbox, pixel_definition)
+            bbox = bbox_spatialize_half_pixel_offset_xyxy(
+                bbox, pixel_definition)
     # now source to float
     if source_pixel_coordinate_system != target_pixel_coordinate_system:
         if source_pixel_coordinate_system == PixelCoordinateSystem.Aligned:
             # aligned to half pixel offset
             from data.operator.bbox.transform.pixel_coordinate_system.mapping import bbox_pixel_coordinate_system_aligned_to_half_pixel_offset
-            bbox = bbox_pixel_coordinate_system_aligned_to_half_pixel_offset(bbox)
+            bbox = bbox_pixel_coordinate_system_aligned_to_half_pixel_offset(
+                bbox)
         else:
             # half pixel offset to aligned
             from data.operator.bbox.transform.pixel_coordinate_system.mapping import bbox_pixel_coordinate_system_half_pixel_offset_to_aligned
-            bbox = bbox_pixel_coordinate_system_half_pixel_offset_to_aligned(bbox)
+            bbox = bbox_pixel_coordinate_system_half_pixel_offset_to_aligned(
+                bbox)
     # now float & target pixel coordinate
     if target_bounding_box_coordinate_system == BoundingBoxCoordinateSystem.Rasterized:
         if target_pixel_coordinate_system == PixelCoordinateSystem.Aligned:
@@ -37,11 +41,13 @@ def bbox_xyxy_transform(bbox, source_pixel_coordinate_system: PixelCoordinateSys
     return bbox
 
 
-def bbox_polygon_transform(bbox, source_pixel_coordinate_system: PixelCoordinateSystem,
-                   target_pixel_coordinate_system: PixelCoordinateSystem,
-                   source_bounding_box_coordinate_system: BoundingBoxCoordinateSystem,
-                   target_bounding_box_coordinate_system: BoundingBoxCoordinateSystem,
-                   pixel_definition: PixelDefinition=PixelDefinition.Point):
+def bbox_polygon_transform(
+        bbox,
+        source_pixel_coordinate_system: PixelCoordinateSystem,
+        target_pixel_coordinate_system: PixelCoordinateSystem,
+        source_bounding_box_coordinate_system: BoundingBoxCoordinateSystem,
+        target_bounding_box_coordinate_system: BoundingBoxCoordinateSystem,
+        pixel_definition: PixelDefinition = PixelDefinition.Point):
     assert pixel_definition == PixelDefinition.Point, "pixel as 1x1 square is not allowed when bounding box format is Polygon"
     if source_bounding_box_coordinate_system == BoundingBoxCoordinateSystem.Rasterized:
         if source_pixel_coordinate_system == PixelCoordinateSystem.Aligned:
@@ -55,10 +61,12 @@ def bbox_polygon_transform(bbox, source_pixel_coordinate_system: PixelCoordinate
     if source_pixel_coordinate_system != target_pixel_coordinate_system:
         if source_pixel_coordinate_system == PixelCoordinateSystem.Aligned:
             from data.operator.bbox.transform.pixel_coordinate_system.mapping import bbox_pixel_coordinate_system_aligned_to_half_pixel_offset
-            bbox = bbox_pixel_coordinate_system_aligned_to_half_pixel_offset(bbox)
+            bbox = bbox_pixel_coordinate_system_aligned_to_half_pixel_offset(
+                bbox)
         else:
             from data.operator.bbox.transform.pixel_coordinate_system.mapping import bbox_pixel_coordinate_system_half_pixel_offset_to_aligned
-            bbox = bbox_pixel_coordinate_system_half_pixel_offset_to_aligned(bbox)
+            bbox = bbox_pixel_coordinate_system_half_pixel_offset_to_aligned(
+                bbox)
     # now bbox is spatizlied and fit with target pixel coordinate system
     # do bounding box coordinate system transform
     if target_bounding_box_coordinate_system == BoundingBoxCoordinateSystem.Rasterized:
@@ -71,7 +79,8 @@ def bbox_polygon_transform(bbox, source_pixel_coordinate_system: PixelCoordinate
     return bbox
 
 
-def bbox_rasterized_transform(bbox, source_format: BoundingBoxFormat, target_format: BoundingBoxFormat):
+def bbox_rasterized_transform(bbox, source_format: BoundingBoxFormat,
+                              target_format: BoundingBoxFormat):
     if source_format == target_format:
         return bbox
     if source_format == BoundingBoxFormat.XYWH:
@@ -90,7 +99,8 @@ def bbox_rasterized_transform(bbox, source_format: BoundingBoxFormat, target_for
         return bbox_xyxy2polygon(bbox)
 
 
-def bbox_to_xyxy(bbox, format_: BoundingBoxFormat, bounding_box_coordinate_system: BoundingBoxCoordinateSystem):
+def bbox_to_xyxy(bbox, format_: BoundingBoxFormat,
+                 bounding_box_coordinate_system: BoundingBoxCoordinateSystem):
     if format_ == BoundingBoxFormat.XYXY:
         return bbox
     if format_ == BoundingBoxFormat.XYWH:
@@ -105,7 +115,9 @@ def bbox_to_xyxy(bbox, format_: BoundingBoxFormat, bounding_box_coordinate_syste
         return bbox_polygon2xyxy(bbox)
 
 
-def bbox_to_polygon(bbox, format_: BoundingBoxFormat, bounding_box_coordinate_system: BoundingBoxCoordinateSystem):
+def bbox_to_polygon(
+        bbox, format_: BoundingBoxFormat,
+        bounding_box_coordinate_system: BoundingBoxCoordinateSystem):
     if format_ == BoundingBoxFormat.Polygon:
         return bbox
     if format_ == BoundingBoxFormat.XYWH:
@@ -120,7 +132,9 @@ def bbox_to_polygon(bbox, format_: BoundingBoxFormat, bounding_box_coordinate_sy
     return bbox_xyxy2polygon(bbox)
 
 
-def bbox_polygon_to_any(bbox, target_format: BoundingBoxFormat, bounding_box_coordinate_system: BoundingBoxCoordinateSystem):
+def bbox_polygon_to_any(
+        bbox, target_format: BoundingBoxFormat,
+        bounding_box_coordinate_system: BoundingBoxCoordinateSystem):
     if target_format == BoundingBoxFormat.Polygon:
         return bbox
     else:
@@ -137,7 +151,9 @@ def bbox_polygon_to_any(bbox, target_format: BoundingBoxFormat, bounding_box_coo
             return bbox
 
 
-def bbox_xyxy_to_any(bbox, target_format: BoundingBoxFormat, bounding_box_coordinate_system: BoundingBoxCoordinateSystem):
+def bbox_xyxy_to_any(
+        bbox, target_format: BoundingBoxFormat,
+        bounding_box_coordinate_system: BoundingBoxCoordinateSystem):
     if target_format == BoundingBoxFormat.XYXY:
         return bbox
     elif target_format == BoundingBoxFormat.XYWH:
@@ -152,7 +168,8 @@ def bbox_xyxy_to_any(bbox, target_format: BoundingBoxFormat, bounding_box_coordi
         return bbox_xyxy2polygon(bbox)
 
 
-def bbox_to_xywh(bbox, format_: BoundingBoxFormat, bounding_box_coordinate_system: BoundingBoxCoordinateSystem):
+def bbox_to_xywh(bbox, format_: BoundingBoxFormat,
+                 bounding_box_coordinate_system: BoundingBoxCoordinateSystem):
     if format_ == BoundingBoxFormat.XYWH:
         return bbox
     if format_ == BoundingBoxFormat.Polygon:
@@ -166,12 +183,14 @@ def bbox_to_xywh(bbox, format_: BoundingBoxFormat, bounding_box_coordinate_syste
         return bbox_xyxy2xywh(bbox)
 
 
-def bbox_transform(bbox, source_format: BoundingBoxFormat, target_format: BoundingBoxFormat,
-                   source_pixel_coordinate_system: PixelCoordinateSystem,
-                   target_pixel_coordinate_system: PixelCoordinateSystem,
-                   source_bounding_box_coordinate_system: BoundingBoxCoordinateSystem,
-                   target_bounding_box_coordinate_system: BoundingBoxCoordinateSystem,
-                   pixel_definition: PixelDefinition):
+def bbox_transform(
+        bbox, source_format: BoundingBoxFormat,
+        target_format: BoundingBoxFormat,
+        source_pixel_coordinate_system: PixelCoordinateSystem,
+        target_pixel_coordinate_system: PixelCoordinateSystem,
+        source_bounding_box_coordinate_system: BoundingBoxCoordinateSystem,
+        target_bounding_box_coordinate_system: BoundingBoxCoordinateSystem,
+        pixel_definition: PixelDefinition):
     '''
     1. polygon not allowed with PixelDefinition.Square
     2. BoundingBoxCoordinateSystem.Rasterized highway
@@ -183,11 +202,23 @@ def bbox_transform(bbox, source_format: BoundingBoxFormat, target_format: Boundi
         # do in float space
         if source_format == BoundingBoxFormat.Polygon or target_format == BoundingBoxFormat.Polygon:
             # do in polygon routine
-            bbox = bbox_to_polygon(bbox, source_format, source_bounding_box_coordinate_system)
-            bbox = bbox_polygon_transform(bbox, source_pixel_coordinate_system, target_pixel_coordinate_system, source_bounding_box_coordinate_system, target_bounding_box_coordinate_system, pixel_definition)
-            return bbox_polygon_to_any(bbox, target_format, target_bounding_box_coordinate_system)
+            bbox = bbox_to_polygon(bbox, source_format,
+                                   source_bounding_box_coordinate_system)
+            bbox = bbox_polygon_transform(
+                bbox, source_pixel_coordinate_system,
+                target_pixel_coordinate_system,
+                source_bounding_box_coordinate_system,
+                target_bounding_box_coordinate_system, pixel_definition)
+            return bbox_polygon_to_any(bbox, target_format,
+                                       target_bounding_box_coordinate_system)
         else:
             # do in xyxy routine
-            bbox = bbox_to_xyxy(bbox, source_format, source_bounding_box_coordinate_system)
-            bbox = bbox_xyxy_transform(bbox, source_pixel_coordinate_system, target_pixel_coordinate_system, source_bounding_box_coordinate_system, target_bounding_box_coordinate_system, pixel_definition)
-            return bbox_xyxy_to_any(bbox, target_format, target_bounding_box_coordinate_system)
+            bbox = bbox_to_xyxy(bbox, source_format,
+                                source_bounding_box_coordinate_system)
+            bbox = bbox_xyxy_transform(bbox, source_pixel_coordinate_system,
+                                       target_pixel_coordinate_system,
+                                       source_bounding_box_coordinate_system,
+                                       target_bounding_box_coordinate_system,
+                                       pixel_definition)
+            return bbox_xyxy_to_any(bbox, target_format,
+                                    target_bounding_box_coordinate_system)

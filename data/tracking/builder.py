@@ -14,8 +14,7 @@ def build_data_source(
     data_pipeline_type = data_config["type"]
     if data_pipeline_type == "SiamFC":
         from data.tracking.methods.SiamFC.builders.source import (
-            build_siamfc_data_source,
-        )
+            build_siamfc_data_source, )
 
         data_pipelines = build_siamfc_data_source(
             data_config,
@@ -28,8 +27,7 @@ def build_data_source(
         )
     elif data_pipeline_type == "Sequential":
         from data.tracking.methods.sequential.builders.source import (
-            build_sequential_sampling_data_source,
-        )
+            build_sequential_sampling_data_source, )
 
         data_pipelines = build_sequential_sampling_data_source(
             data_config,
@@ -57,8 +55,7 @@ def build_data_bridge(
 ):
     if data_config["type"] == "Sequential":
         from data.tracking.methods.sequential.builders.additional_pipeline import (
-            build_sequential_sampling_additional_data_pipelines,
-        )
+            build_sequential_sampling_additional_data_pipelines, )
 
         return build_sequential_sampling_additional_data_pipelines(
             runtime_vars,

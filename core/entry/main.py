@@ -44,29 +44,27 @@ def spawn_workers(args):
     while index_of_arg < len(command_args):
         command_arg = command_args[index_of_arg]
         if command_arg in (
-            "--distributed_nnodes",
-            "--distributed_nproc_per_node",
-            "--conf_seed",
-            "--run_id",
-            "--distributed_node_rank",
+                "--distributed_nnodes",
+                "--distributed_nproc_per_node",
+                "--conf_seed",
+                "--run_id",
+                "--distributed_node_rank",
         ):
             index_of_arg += 2
         elif command_arg in (
-            "--distributed_do_spawn_workers",
-            "--kill_other_python_processes",
+                "--distributed_do_spawn_workers",
+                "--kill_other_python_processes",
         ):
             index_of_arg += 1
         else:
             torch_run_args.append(command_arg)
             index_of_arg += 1
-    torch_run_args.extend(
-        [
-            "--run_id",
-            args.run_id,
-            "--conf_seed",
-            str(deterministic_rng.integers(10000000)),
-        ]
-    )
+    torch_run_args.extend([
+        "--run_id",
+        args.run_id,
+        "--conf_seed",
+        str(deterministic_rng.integers(10000000)),
+    ])
     print(f"Executing torch.distributed.run.main({torch_run_args})")
     import torch.distributed.run
 
@@ -89,7 +87,8 @@ def _kill_other_python_processes():
                     continue
                 else:
                     proc.kill()
-        except (psutil.NoSuchProcess, psutil.AccessDenied, psutil.ZombieProcess):
+        except (psutil.NoSuchProcess, psutil.AccessDenied,
+                psutil.ZombieProcess):
             pass
 
 
@@ -103,8 +102,8 @@ def _remove_ddp_parameter(args):
 
 def setup_arg_parser():
     parser = argparse.ArgumentParser(
-        "Model training & evaluation entry script", parents=[get_train_args_parser()]
-    )
+        "Model training & evaluation entry script",
+        parents=[get_train_args_parser()])
     parser.add_argument(
         "--watch_model_parameters",
         action="store_true",
@@ -115,11 +114,14 @@ def setup_arg_parser():
         action="store_true",
         help="watch the gradients of model using wandb",
     )
-    parser.add_argument(
-        "--watch_model_freq", default=1000, type=int, help="model watching frequency"
-    )
+    parser.add_argument("--watch_model_freq",
+                        default=1000,
+                        type=int,
+                        help="model watching frequency")
 
-    parser.add_argument("--weight_path", type=str, help="path to the .pth weight file")
+    parser.add_argument("--weight_path",
+                        type=str,
+                        help="path to the .pth weight file")
     return parser
 
 

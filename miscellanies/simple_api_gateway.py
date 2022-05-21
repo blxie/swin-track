@@ -5,6 +5,7 @@ from contextlib import nullcontext
 
 
 class CallbackFactory:
+
     def __init__(self, callback_class, args=()):
         self.callback_class = callback_class
         self.args = args
@@ -14,6 +15,7 @@ class CallbackFactory:
 
 
 class Response:
+
     def __init__(self, socket):
         self.socket = socket
         self.status_code = 200
@@ -59,7 +61,7 @@ def _server_entry(socket_address: str, callback):
         while True:
             command = socket.recv_pyobj()
             if command == 'hello':
-                socket.send_pyobj((200,))
+                socket.send_pyobj((200, ))
             elif command == 'shutdown':
                 socket.close()
                 return
@@ -70,6 +72,7 @@ def _server_entry(socket_address: str, callback):
 
 
 class ServerLauncher:
+
     def __init__(self, socket_address: str, callback):
         self.socket_address = socket_address
         self.callback = callback
@@ -94,7 +97,9 @@ class ServerLauncher:
         return self.stopped is False
 
     def launch(self, wait_for_ready=True):
-        self.process = multiprocessing.Process(target=_server_entry, args=(self.socket_address, self.callback))
+        self.process = multiprocessing.Process(target=_server_entry,
+                                               args=(self.socket_address,
+                                                     self.callback))
         self.process.start()
         if wait_for_ready:
             socket = zmq.Context.instance().socket(zmq.REQ)
@@ -114,13 +119,16 @@ class ServerLauncher:
                 self.process.join(waiting_timeout)
                 if self.process.exitcode is None:
                     self.process.kill()
-                    print('Timeout when waiting for server process to exit. Killed.')
+                    print(
+                        'Timeout when waiting for server process to exit. Killed.'
+                    )
                 self.process.close()
                 del self.process
             self.stopped = True
 
 
 class Client:
+
     def __init__(self, socket_address: str):
         self.socket_address = socket_address
 
@@ -142,6 +150,7 @@ class Client:
         self.socket.send_pyobj(args)
         response = self.socket.recv_pyobj()
         if response[0] < 200 or response[0] >= 300:
-            raise RuntimeError(f'remote procedure failed with code {response[0]}')
+            raise RuntimeError(
+                f'remote procedure failed with code {response[0]}')
         else:
             return response[1]
