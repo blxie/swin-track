@@ -1,3 +1,4 @@
+import encodings
 import numpy as np
 import cv2
 import os
@@ -20,16 +21,17 @@ def save_image(filename, img, color_fmt='RGB'):
     return img.save(filename)
 
 
-def show_image(img,
-               bboxes=None,
-               bbox_fmt='ltrb',
-               colors=None,
-               thickness=2,  # 线的粗细
-               fig=1,
-               delay=1,
-               max_size=640,
-               visualize=True,
-               cvt_code=cv2.COLOR_RGB2BGR):
+def show_image(
+        img,
+        bboxes=None,
+        bbox_fmt='ltrb',
+        colors=None,
+        thickness=2,  # 线的粗细
+        fig=1,
+        delay=1,
+        max_size=640,
+        visualize=True,
+        cvt_code=cv2.COLOR_RGB2BGR):
     if cvt_code is not None:
         img = cv2.cvtColor(img, cvt_code)
 
@@ -94,7 +96,7 @@ if __name__ == '__main__':
 
         predict_bboxes = []
         with open(
-                "visualize/got-10k-test/Tiny/GOT-10k_Test_{:06d}/GOT-10k_Test_{:06d}_001.txt"
+                "/home/guest/XieBailian/proj/SwinTrack/visualize/got-10k-test/Tiny/GOT-10k_Test_{:06d}/GOT-10k_Test_{:06d}_001.txt"
                 .format(n, n)) as fp:
             lines = fp.readlines()
             # print(lines)
@@ -106,10 +108,34 @@ if __name__ == '__main__':
             img_file = os.path.join(img_folder, '{:08d}.jpg'.format(i + 1))
             # print(img_file)
 
-            # (1) 获取 image
-            color_fmt = "RGB"
-            img = read_image(img_file, color_fmt)
-            # (2) 获取 predict_bbox
+            # 方案一
+            # # (1) 获取 image
+            # color_fmt = "RGB"
+            # img = read_image(img_file, color_fmt)
+            # # (2) 获取 predict_bbox
             predict_bbox = predict_bboxes[i]
-            # (3) 展示添加预测框的图片
-            show_image(img, predict_bbox)
+            # # (3) 展示添加预测框的图片
+            # show_image(img, predict_bbox)
+
+            # 方案二
+            # flags[0, 1] 分别表示灰度、彩色图像
+            img = cv2.imread(img_file, flags=1)
+            img = cv2.rectangle(
+                img,
+                (int(predict_bbox[0]), int(predict_bbox[1])),
+                (int(predict_bbox[0] + predict_bbox[2]),
+                 int(predict_bbox[1] + predict_bbox[3])),
+                (0, 0, 255),
+                3,
+            )
+
+            if max(img.shape[:2]) > 640:
+                scale = 640 / max(img.shape[:2])
+                out_size = (int(img.shape[1] * scale), int(img.shape[0] * scale))
+                img = cv2.resize(img, out_size)
+            # original image
+            # image_ori = image[:, :, ::-1].copy()  # RGB --> BGR
+            # tracker box
+            cv2.imshow("TEST", img)
+            cv2.waitKey(10)
+        cv2.destroyAllWindows()

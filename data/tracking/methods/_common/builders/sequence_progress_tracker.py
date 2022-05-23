@@ -45,6 +45,7 @@ class SequenceProcessTracking:
             ]
         }
 
+    # TRACED outputs
     def post_processing(self, outputs):
         num_evaluated_sequences = 0
         if outputs is not None:

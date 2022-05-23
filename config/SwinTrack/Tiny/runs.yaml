@@ -148,7 +148,8 @@ data:
 
   test:
     # TRACED
-    batch_size: 8
+    # batch_size: 8
+    batch_size: 1  # 设置为 1 方便调试
 
     type: "Sequential"
 

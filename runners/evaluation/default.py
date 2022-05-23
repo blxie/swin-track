@@ -100,6 +100,7 @@ class DefaultSiamFCEvaluator(BaseRunner):
                 # TRACED data/tracking/methods/sequential/metric_collector/metric_collector.py
                 if hasattr(data_pipeline, "post_processing"):
                     outputs = data_pipeline.post_processing(outputs)
+                    # print("For debug... Watching outputs.")
 
     def register_data_pipelines(self, branch_name, data_pipelines):
         if "data_pipeline" in data_pipelines:

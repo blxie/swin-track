@@ -22,7 +22,7 @@
             ]
         },
         {
-            "name": "GOT-10k-TRAIN",
+            "name": "TRAIN",
             "type": "python",
             "request": "launch",
             // "program": "${file}",
@@ -37,7 +37,7 @@
             ]
         },
         {
-            "name": "GOT-10k-TEST",
+            "name": "TEST",
             "type": "python",
             "request": "launch",
             // "program": "${file}",
@@ -50,17 +50,17 @@
                 "--weight_path",
                 "checkpoints/SwinTrack-Tiny.pth",
                 "--mixin_config",
-                "evaluation.yaml",
+                "evaluation_bs_1.yaml",
                 "--output_dir",
                 "./debug_output",
                 "--num_workers",
-                "8",
+                "1",
                 "--watch_model_gradients",
                 "--watch_model_parameters",
-                "--wandb_run_offline",
-                "--distributed_do_spawn_workers",
-                "--distributed_nproc_per_node",
-                "3",
+                // "--wandb_run_offline",
+                // "--distributed_do_spawn_workers",
+                // "--distributed_nproc_per_node",
+                // "3",
                 // "--do_sweep",
                 // "--wandb_distributed_aware"
             ]

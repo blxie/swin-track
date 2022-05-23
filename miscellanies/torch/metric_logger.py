@@ -9,6 +9,7 @@ import datetime
 
 
 class MetricLogger(object):
+
     def __init__(self, delimiter="\t"):
         self.meters = defaultdict(SmoothedValue)
         self.delimiter = delimiter
@@ -25,9 +26,8 @@ class MetricLogger(object):
             return self.meters[attr]
         if attr in self.__dict__:
             return self.__dict__[attr]
-        raise AttributeError(
-            "'{}' object has no attribute '{}'".format(type(self).__name__, attr)
-        )
+        raise AttributeError("'{}' object has no attribute '{}'".format(
+            type(self).__name__, attr))
 
     def __str__(self):
         loss_str = []
@@ -53,35 +53,43 @@ class MetricLogger(object):
         data_time = SmoothedValue(fmt="{avg:.4f}")
         space_fmt = ":" + str(len(str(len(iterable)))) + "d"
         if torch.cuda.is_available():
-            log_msg = self.delimiter.join(
-                [
-                    header,
-                    "[{0" + space_fmt + "}/{1}]",
-                    "eta: {eta}",
-                    "{localtime}",
-                    "{meters}",
-                    "time: {time}",
-                    "data: {data}",
-                    "max mem: {memory:.0f}",
-                ]
-            )
+            log_msg = self.delimiter.join([
+                header,
+                "[{0" + space_fmt + "}/{1}]",
+                "eta: {eta}",
+                "{localtime}",
+                "{meters}",
+                "time: {time}",
+                "data: {data}",
+                "max mem: {memory:.0f}",
+            ])
         else:
-            log_msg = self.delimiter.join(
-                [
-                    header,
-                    "[{0" + space_fmt + "}/{1}]",
-                    "eta: {eta}",
-                    "{localtime}",
-                    "{meters}",
-                    "time: {time}",
-                    "data: {data}",
-                ]
-            )
+            log_msg = self.delimiter.join([
+                header,
+                "[{0" + space_fmt + "}/{1}]",
+                "eta: {eta}",
+                "{localtime}",
+                "{meters}",
+                "time: {time}",
+                "data: {data}",
+            ])
         MB = 1024.0 * 1024.0
+
+        # TRACED obj 是突破口
         for obj in iterable:
             data_time.update(time.time() - end)
             yield obj
             iter_time.update(time.time() - end)
+
+            # 可视化功能
+            for seq_dataset_name, seq_name, seq_len, frame_index in zip(
+                    obj[2]['seq_dataset_name'],
+                    obj[2]['seq_name'],
+                    obj[2]['seq_len'],
+                    obj[2]['frame_index'],
+            ):
+                print(f"当前 frame：{seq_dataset_name}: {seq_name}-{seq_len}[{frame_index}]")
+
             if i % print_freq == 0 or i == len(iterable) - 1:
                 eta_seconds = iter_time.global_avg * (len(iterable) - i)
                 eta_string = str(datetime.timedelta(seconds=int(eta_seconds)))
@@ -97,8 +105,7 @@ class MetricLogger(object):
                             time=str(iter_time),
                             data=str(data_time),
                             memory=torch.cuda.max_memory_allocated() / MB,
-                        )
-                    )
+                        ))
                 else:
                     print(
                         log_msg.format(
@@ -109,14 +116,12 @@ class MetricLogger(object):
                             meters=str(self),
                             time=str(iter_time),
                             data=str(data_time),
-                        )
-                    )
+                        ))
+
             i += 1
             end = time.time()
+
         total_time = time.time() - start_time
         total_time_str = str(datetime.timedelta(seconds=int(total_time)))
-        print(
-            "{} Total time: {} ({:.4f} s / it)".format(
-                header, total_time_str, total_time / len(iterable)
-            )
-        )
+        print("{} Total time: {} ({:.4f} s / it)".format(
+            header, total_time_str, total_time / len(iterable)))
