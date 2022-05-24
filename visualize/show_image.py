@@ -89,11 +89,47 @@ def show_image(
     return img
 
 
-if __name__ == '__main__':
-    for n in range(1, 181, 30):
-        # 读取每一张图片
-        img_folder = '/data/GOT-10k/test/GOT-10k_Test_{:06d}/'.format(n)
+def show_frames(sequence_dir, frame_format, sequence_len, predict_bboxes):
+    """输出最后的显示结果
+    sequence_dir: 序列的文件夹部分
+    frame_format: 帧的格式 传入格式化字符串
+      '{:08d}.jpg' 表示 GOT-10k 以及 LaSOT 的 frame 格式
+      '{}.jpg' 表示 TrackingNet 的格式
+    sequence_len: 序列的长度
+      设置的原因是：LaSOT 里面有一个 groundtruth.txt，混合在里面
+    predict_bboxes: 预测的边界框
+    """
+    for i in range(1, sequence_len):
+        # (1) 获取 image
+        img_file = os.path.join(sequence_dir, frame_format.format(i))
+        # print(img_file)
 
+        # (2) 获取 predict_bbox
+        predict_bbox = predict_bboxes[i]
+        # # (3) 展示添加预测框的图片
+        # flags[0, 1] 分别表示灰度、彩色图像
+        img = cv2.imread(img_file, flags=1)
+        img = cv2.rectangle(
+            img,
+            (int(predict_bbox[0]), int(predict_bbox[1])),
+            (int(predict_bbox[0] + predict_bbox[2]),
+             int(predict_bbox[1] + predict_bbox[3])),
+            (0, 0, 255),
+            3,
+        )
+
+        if max(img.shape[:2]) > 640:
+            scale = 640 / max(img.shape[:2])
+            out_size = (int(img.shape[1] * scale), int(img.shape[0] * scale))
+            img = cv2.resize(img, out_size)
+        cv2.imshow("TEST", img)
+        cv2.waitKey(10)
+    cv2.destroyAllWindows()
+
+
+if __name__ == '__main__':
+    for n in range(152, 181):
+        sequence_dir = '/data/GOT-10k/test/GOT-10k_Test_{:06d}/'.format(n)
         predict_bboxes = []
         with open(
                 "/home/guest/XieBailian/proj/SwinTrack/visualize/got-10k-test/Tiny/GOT-10k_Test_{:06d}/GOT-10k_Test_{:06d}_001.txt"
@@ -104,38 +140,5 @@ if __name__ == '__main__':
                 predict_bbox = np.fromstring(line, dtype=float, sep=",")
                 predict_bboxes.append(predict_bbox)
 
-        for i in range(len(os.listdir(img_folder)) - 1):
-            img_file = os.path.join(img_folder, '{:08d}.jpg'.format(i + 1))
-            # print(img_file)
-
-            # 方案一
-            # # (1) 获取 image
-            # color_fmt = "RGB"
-            # img = read_image(img_file, color_fmt)
-            # # (2) 获取 predict_bbox
-            predict_bbox = predict_bboxes[i]
-            # # (3) 展示添加预测框的图片
-            # show_image(img, predict_bbox)
-
-            # 方案二
-            # flags[0, 1] 分别表示灰度、彩色图像
-            img = cv2.imread(img_file, flags=1)
-            img = cv2.rectangle(
-                img,
-                (int(predict_bbox[0]), int(predict_bbox[1])),
-                (int(predict_bbox[0] + predict_bbox[2]),
-                 int(predict_bbox[1] + predict_bbox[3])),
-                (0, 0, 255),
-                3,
-            )
-
-            if max(img.shape[:2]) > 640:
-                scale = 640 / max(img.shape[:2])
-                out_size = (int(img.shape[1] * scale), int(img.shape[0] * scale))
-                img = cv2.resize(img, out_size)
-            # original image
-            # image_ori = image[:, :, ::-1].copy()  # RGB --> BGR
-            # tracker box
-            cv2.imshow("TEST", img)
-            cv2.waitKey(10)
-        cv2.destroyAllWindows()
+        show_frames(sequence_dir, '{:08d}.jpg',
+                    len(os.listdir(sequence_dir)) - 1, predict_bboxes)

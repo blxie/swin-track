@@ -4,7 +4,11 @@ from core.run.event_dispatcher.register import EventRegister
 
 
 class WandbLogger:
-    def __init__(self, wandb_instance: wandb.wandb_sdk.wandb_run.Run, logging_frequency: int, prefix=None,
+
+    def __init__(self,
+                 wandb_instance: wandb.wandb_sdk.wandb_run.Run,
+                 logging_frequency: int,
+                 prefix=None,
                  with_epoch=False):
         self.instance = wandb_instance
         self.logging_frequency = logging_frequency
@@ -48,13 +52,19 @@ class WandbLogger:
         for metric_definition in metric_definitions:
             if self.prefix is not None:
                 metric_definition = copy.copy(metric_definition)
-                metric_definition['name'] = metric_definition['name'] + self.prefix
+                metric_definition[
+                    'name'] = metric_definition['name'] + self.prefix
 
             self.instance.define_metric(**metric_definition)
 
 
 class WandbEpochSummaryLogger:
-    def __init__(self, wandb_instance: wandb.wandb_sdk.wandb_run.Run, summary_method, prefix=None, with_epoch=False):
+
+    def __init__(self,
+                 wandb_instance: wandb.wandb_sdk.wandb_run.Run,
+                 summary_method,
+                 prefix=None,
+                 with_epoch=False):
         assert summary_method == 'mean'
         self.instance = wandb_instance
         self.prefix = prefix
@@ -70,7 +80,8 @@ class WandbEpochSummaryLogger:
     def on_epoch_end(self, epoch):
         if len(self.metrics) > 0:
             epoch_metrics = {}
-            for metric_name, (metric_total, metric_count) in self.metrics.items():
+            for metric_name, (metric_total,
+                              metric_count) in self.metrics.items():
                 epoch_metrics[metric_name] = metric_total / metric_count
             if self.with_epoch:
                 epoch_metrics['epoch'] = epoch
@@ -94,17 +105,20 @@ class WandbEpochSummaryLogger:
         for metric_definition in metric_definitions:
             if self.prefix is not None:
                 metric_definition = copy.copy(metric_definition)
-                metric_definition['name'] = metric_definition['name'] + self.prefix
+                metric_definition[
+                    'name'] = metric_definition['name'] + self.prefix
 
             self.instance.define_metric(**metric_definition)
 
 
-def _wandb_logger_register_event_callback(logger, event_register: EventRegister):
+def _wandb_logger_register_event_callback(logger,
+                                          event_register: EventRegister):
     event_register.register_epoch_begin_hook(logger)
     event_register.register_epoch_end_hook(logger)
 
 
-def build_wandb_logger(logging_config, wandb_instance, branch_event_register: EventRegister):
+def build_wandb_logger(logging_config, wandb_instance,
+                       branch_event_register: EventRegister):
     if wandb_instance is None:
         return []
     if logging_config is None:
@@ -133,27 +147,37 @@ def build_wandb_logger(logging_config, wandb_instance, branch_event_register: Ev
             with_epoch = wandb_config['with_epoch']
 
         if 'per_iteration_logging' in wandb_config:
-            per_iteration_logging_config = wandb_config['per_iteration_logging']
-            enable_per_iteration_logging = per_iteration_logging_config['enabled']
+            per_iteration_logging_config = wandb_config[
+                'per_iteration_logging']
+            enable_per_iteration_logging = per_iteration_logging_config[
+                'enabled']
             if 'prefix' in per_iteration_logging_config:
-                per_iteration_logging_prefix = per_iteration_logging_prefix + per_iteration_logging_config['prefix'] if per_iteration_logging_prefix is not None else per_iteration_logging_config['prefix']
+                per_iteration_logging_prefix = per_iteration_logging_prefix + per_iteration_logging_config[
+                    'prefix'] if per_iteration_logging_prefix is not None else per_iteration_logging_config[
+                        'prefix']
 
         if 'per_epoch_logging' in wandb_config:
             per_epoch_logging_config = wandb_config['per_epoch_logging']
             enable_per_epoch_logging = per_epoch_logging_config['enabled']
             if 'prefix' in per_epoch_logging_config:
-                per_epoch_logging_prefix = per_epoch_logging_prefix + per_epoch_logging_config['prefix'] if per_epoch_logging_prefix is not None else per_epoch_logging_config['prefix']
+                per_epoch_logging_prefix = per_epoch_logging_prefix + per_epoch_logging_config[
+                    'prefix'] if per_epoch_logging_prefix is not None else per_epoch_logging_config[
+                        'prefix']
 
             if 'summary_method' in per_epoch_logging_config:
-                per_epoch_logging_summary_method = per_epoch_logging_config['summary_method']
+                per_epoch_logging_summary_method = per_epoch_logging_config[
+                    'summary_method']
 
     loggers = []
     if enable_per_iteration_logging:
-        logger = WandbLogger(wandb_instance, logging_interval, per_iteration_logging_prefix, with_epoch)
+        logger = WandbLogger(wandb_instance, logging_interval,
+                             per_iteration_logging_prefix, with_epoch)
         _wandb_logger_register_event_callback(logger, branch_event_register)
         loggers.append(logger)
     if enable_per_epoch_logging:
-        logger = WandbEpochSummaryLogger(wandb_instance, per_epoch_logging_summary_method, per_epoch_logging_prefix, with_epoch)
+        logger = WandbEpochSummaryLogger(wandb_instance,
+                                         per_epoch_logging_summary_method,
+                                         per_epoch_logging_prefix, with_epoch)
         _wandb_logger_register_event_callback(logger, branch_event_register)
         loggers.append(logger)
     return loggers

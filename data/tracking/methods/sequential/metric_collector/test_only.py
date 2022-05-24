@@ -3,6 +3,7 @@ import numpy as np
 import shutil
 from data.operator.bbox.spatial.np.xyxy2xywh import bbox_xyxy2xywh
 from miscellanies.torch.distributed import is_main_process
+# from data.tracking.methods.sequential.metric_collector.test_only import *
 r"""
 由于只是调试测试，这里只选取 GOT-10k 来进行测试，具体要修改下 datasets/easy_builder/builder.py 中的代码
 我的目的是：测试的时候可视化测试结果
@@ -27,11 +28,22 @@ class Got10kFormatPacker:
 
     def save_sequence_result(self, dataset_unique_id, sequence_name,
                              predicted_bboxes, time_cost_array):
+        # 将预测的目标位置转化为点+偏移的表达形式
+        # FIXME 注意这里坐标转换！不转换会出错！！！
+        predicted_bboxes = bbox_xyxy2xywh(predicted_bboxes)
+
+        # START: my add
+        from visualize.show_image import show_frames
+        print(f"Sequence: {sequence_name}")
+        detail = dataset_unique_id.split('-')[-2]
+        sequence_dir = os.path.join('/data/GOT-10k', detail, sequence_name)
+        show_frames(sequence_dir, '{:08d}.jpg',
+                    len(os.listdir(sequence_dir)) - 1, predicted_bboxes)
+        # END
+
         sequence_path = os.path.join(self.saving_path, dataset_unique_id,
                                      self.tracker_name, sequence_name)
         os.makedirs(sequence_path, exist_ok=True)
-        # 将预测的目标位置转化为点+偏移的表达形式
-        predicted_bboxes = bbox_xyxy2xywh(predicted_bboxes)
         np.savetxt(
             os.path.join(sequence_path, f"{sequence_name}_001.txt"),
             predicted_bboxes,
@@ -60,10 +72,20 @@ class TrackingNetFormatPacker:
 
     def save_sequence_result(self, dataset_unique_id, sequence_name,
                              predicted_bboxes, time_cost_array):
+        # 注意： 这一步必须先进行！即先进性坐标转换的操作
+        predicted_bboxes = bbox_xyxy2xywh(predicted_bboxes)
+        # START
+        from visualize.show_image import show_frames
+
+        base_dir = "/data/TrackingNet/test/frames"
+        sequence_dir = os.path.join(base_dir, sequence_name)
+        show_frames(sequence_dir, '{}.jpg', len(os.listdir(sequence_dir)),
+                    predicted_bboxes)
+        # END
+
         sequence_path = os.path.join(self.saving_path, dataset_unique_id,
                                      self.tracker_name, sequence_name)
         os.makedirs(sequence_path, exist_ok=True)
-        predicted_bboxes = bbox_xyxy2xywh(predicted_bboxes)
         np.savetxt(
             os.path.join(sequence_path, f"{sequence_name}.txt"),
             predicted_bboxes,

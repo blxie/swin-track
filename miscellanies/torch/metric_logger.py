@@ -75,20 +75,11 @@ class MetricLogger(object):
             ])
         MB = 1024.0 * 1024.0
 
-        # TRACED obj 是突破口
+        # TRACED obj
         for obj in iterable:
             data_time.update(time.time() - end)
             yield obj
             iter_time.update(time.time() - end)
-
-            # 可视化功能
-            for seq_dataset_name, seq_name, seq_len, frame_index in zip(
-                    obj[2]['seq_dataset_name'],
-                    obj[2]['seq_name'],
-                    obj[2]['seq_len'],
-                    obj[2]['frame_index'],
-            ):
-                print(f"当前 frame：{seq_dataset_name}: {seq_name}-{seq_len}[{frame_index}]")
 
             if i % print_freq == 0 or i == len(iterable) - 1:
                 eta_seconds = iter_time.global_avg * (len(iterable) - i)
