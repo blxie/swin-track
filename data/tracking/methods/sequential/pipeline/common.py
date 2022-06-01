@@ -3,6 +3,7 @@ from timm.data.constants import IMAGENET_DEFAULT_MEAN, IMAGENET_DEFAULT_STD
 from torchvision import transforms
 
 
+# TRACED image transform in evl
 def get_transform():
     return transforms.Normalize(mean=torch.tensor(IMAGENET_DEFAULT_MEAN),
                                 std=torch.tensor(IMAGENET_DEFAULT_STD))

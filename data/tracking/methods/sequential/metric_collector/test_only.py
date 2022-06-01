@@ -3,7 +3,6 @@ import numpy as np
 import shutil
 from data.operator.bbox.spatial.np.xyxy2xywh import bbox_xyxy2xywh
 from miscellanies.torch.distributed import is_main_process
-# from data.tracking.methods.sequential.metric_collector.test_only import *
 r"""
 由于只是调试测试，这里只选取 GOT-10k 来进行测试，具体要修改下 datasets/easy_builder/builder.py 中的代码
 我的目的是：测试的时候可视化测试结果

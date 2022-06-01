@@ -83,6 +83,7 @@ def run_iteration(
             # TRACED yield obj
             event_dispatcher.iteration_begin(is_training)
             logger.set_step(runner.get_iteration_index())
+            # TRACED running iteration
             runner.run_iteration(model, data)
             event_dispatcher.iteration_end(is_training)
 

@@ -6,6 +6,7 @@ from timm.data.constants import IMAGENET_DEFAULT_MEAN, IMAGENET_DEFAULT_STD
 from torchvision import transforms
 
 
+# TRACED image transform
 def build_SiamTracker_image_augmentation_transformer(
         color_jitter=0.4, imagenet_normalization=True):
     # color jitter is enabled when not using AA

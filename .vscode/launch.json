@@ -65,18 +65,19 @@
                 // "--wandb_distributed_aware"
             ],
             "env": {
-                "DISPLAY": "10.16.26.116:0.0"
+                "DISPLAY": "10.20.178.82:0.0"
             }
         },
         {
             "name": "VI",
             "type": "python",
             "request": "launch",
-            "program": "${file}",
+            // "program": "${file}",
+            "program": "visualize/show_image.py",
             "console": "integratedTerminal",
             "justMyCode": true,
             "env": {
-                "DISPLAY": "10.16.26.116:0.0"
+                "DISPLAY": "10.20.178.82:0.0"
             }
         },
     ]

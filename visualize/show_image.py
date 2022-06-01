@@ -108,7 +108,8 @@ def show_frames(sequence_dir, frame_format, sequence_len, predict_bboxes):
         predict_bbox = predict_bboxes[i]
         # # (3) 展示添加预测框的图片
         # flags[0, 1] 分别表示灰度、彩色图像
-        img = cv2.imread(img_file, flags=1)
+        # img = cv2.imread(img_file, flags=1)
+        img = read_image(filename=img_file, color_fmt='RGB')
         img = cv2.rectangle(
             img,
             (int(predict_bbox[0]), int(predict_bbox[1])),
@@ -128,7 +129,7 @@ def show_frames(sequence_dir, frame_format, sequence_len, predict_bboxes):
 
 
 if __name__ == '__main__':
-    for n in range(152, 181):
+    for n in range(160, 181):
         sequence_dir = '/data/GOT-10k/test/GOT-10k_Test_{:06d}/'.format(n)
         predict_bboxes = []
         with open(
