@@ -180,8 +180,8 @@ def build_datasets_from_config(
 
     # 只使用 GOT-10k 进行测试
     # config["datasets"] = {"GOT10k": {"type": "SOT", "splits": ["val", "test"]}}
-    # config["datasets"] = {"GOT10k": {"type": "SOT", "splits": ["test"]}}
-    config["datasets"] = {"TrackingNet": {"type": "SOT", "splits": ["test"]}}
+    config["datasets"] = {"GOT10k": {"type": "SOT", "splits": ["test"]}}
+    # config["datasets"] = {"TrackingNet": {"type": "SOT", "splits": ["test"]}}
     print(">>>config datasets:", config["datasets"])
 
     return build_datasets(config, unknown_parameter_handler)
